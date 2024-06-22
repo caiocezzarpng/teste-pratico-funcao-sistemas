@@ -10,6 +10,7 @@ $(document).ready(function () {
             defaultSorting: 'Nome ASC', //Set default sorting
             actions: {
                 listAction: urlClienteList,
+                removeAction: '/Cliente/Excluir'
             },
             fields: {
                 Nome: {
@@ -25,11 +26,28 @@ $(document).ready(function () {
                     display: function (data) {
                         return '<button onclick="window.location.href=\'' + urlAlteracao + '/' + data.record.Id + '\'" class="btn btn-primary btn-sm">Alterar</button>';
                     }
+                },
+                Apagar: { 
+                    title: '',
+                    display: function (data) {
+                        return '<button onclick="apagarCliente(' + data.record.Id + ')" class="btn btn-danger btn-sm">Apagar</button>';
+                    }
                 }
             }
         });
-
-    //Load student list from server
     if (document.getElementById("gridClientes"))
         $('#gridClientes').jtable('load');
 })
+
+function apagarCliente(clienteId) {
+    if (confirm('Tem certeza que deseja excluir este cliente?')) {
+        $.post('/Cliente/Excluir', { id: clienteId }, function (data) {
+            debugger
+            if (data.Result === "OK") {
+                $('#gridClientes').jtable('reload');
+            } else {
+                alert(data.Message);
+            }
+        });
+    }
+}

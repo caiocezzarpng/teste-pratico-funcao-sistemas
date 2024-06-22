@@ -1,6 +1,6 @@
-﻿
-$(document).ready(function () {
+﻿$(document).ready(function () {
     if (obj) {
+        debugger
         $('#formCadastro #Nome').val(obj.Nome);
         $('#formCadastro #CEP').val(obj.CEP);
         $('#formCadastro #Email').val(obj.Email);
@@ -10,17 +10,41 @@ $(document).ready(function () {
         $('#formCadastro #Cidade').val(obj.Cidade);
         $('#formCadastro #Logradouro').val(obj.Logradouro);
         $('#formCadastro #Telefone').val(obj.Telefone);
+
+        let cpfSemMascara = obj.CPF; 
+        let cpfComMascara = cpfMask(cpfSemMascara);
+        $('#formCadastro #CPF').val(cpfComMascara);
     }
+
+    $('#CPF').on('input', function (e) {
+        cpfInputMask(this, cpf);
+        $(this).attr('maxlength', '14');
+    });
+
+    $('#CPF').on('paste', function (e) {
+        var clipboardData = e.originalEvent.clipboardData || window.clipboardData;
+        var pastedData = clipboardData.getData('text');
+        if (pastedData.length > 14) {
+            $(this).val(pastedData.substring(0, 14));
+        }
+    });
 
     $('#formCadastro').submit(function (e) {
         e.preventDefault();
-        
+
+        let cpf = $(this).find("#CPF").val().replace(/\D/g, '');
+        if (!validateCPF(cpf)) {
+            ModalDialog("Erro de Validação", "O CPF informado é inválido.");
+            return;
+        }
+
         $.ajax({
             url: urlPost,
             method: "POST",
             data: {
                 "NOME": $(this).find("#Nome").val(),
                 "CEP": $(this).find("#CEP").val(),
+                "CPF": cpf,
                 "Email": $(this).find("#Email").val(),
                 "Sobrenome": $(this).find("#Sobrenome").val(),
                 "Nacionalidade": $(this).find("#Nacionalidade").val(),
@@ -33,6 +57,8 @@ $(document).ready(function () {
             function (r) {
                 if (r.status == 400)
                     ModalDialog("Ocorreu um erro", r.responseJSON);
+                else if (r.status = 409)
+                    ModalDialog("Operação Inválida", "Já existe um cliente cadastrado com o CPF informado.");
                 else if (r.status == 500)
                     ModalDialog("Ocorreu um erro", "Ocorreu um erro interno no servidor.");
             },
@@ -44,7 +70,10 @@ $(document).ready(function () {
             }
         });
     })
-    
+
+    $('#BeneficiarioBtn').click(function () {
+        $('#beneficiarioModal').modal('show');
+    });
 })
 
 function ModalDialog(titulo, texto) {
