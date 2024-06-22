@@ -1,8 +1,6 @@
-﻿using System;
+﻿using FI.WebAtividadeEntrevista.Models;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Web;
 
 namespace WebAtividadeEntrevista.Models
 {
@@ -12,7 +10,14 @@ namespace WebAtividadeEntrevista.Models
     public class ClienteModel
     {
         public long Id { get; set; }
-        
+
+        /// <summary>
+        /// CPF
+        /// </summary>
+        [Required]
+        [MaxLength(11)]
+        public string CPF { get; set; }
+
         /// <summary>
         /// CEP
         /// </summary>
@@ -67,5 +72,9 @@ namespace WebAtividadeEntrevista.Models
         /// </summary>
         public string Telefone { get; set; }
 
+        /// <summary>
+        /// Lista de beneficiários
+        /// </summary>
+        public List<BeneficiarioModel> Beneficiarios { get; set; } = null;
     }    
 }
