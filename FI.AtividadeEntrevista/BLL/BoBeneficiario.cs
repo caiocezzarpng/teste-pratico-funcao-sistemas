@@ -38,19 +38,24 @@ namespace FI.AtividadeEntrevista.BLL
             _beneficiarioDAO.Excluir(id);
         }
 
-        public DML.Beneficiario Consultar(long id)
-        {
-            return _beneficiarioDAO.Consultar(id);
-        }
-
+        /// <summary>
+        /// verifica se ja existe um beneficiario com o mesmo cpf para o mesmo cliente
+        /// </summary>
+        /// <param name="id">id do beneficiario</param>
+        /// <returns></returns>
         public bool VerificarExistencia(string CPF, long id)
         {
             return _beneficiarioDAO.VerificarExistencia(CPF, id);
         }
 
-        public List<DML.Beneficiario> Pesquisa(long id)
+        /// <summary>
+        /// pesquisa os beneficiarios de um cliente
+        /// </summary>
+        /// <param name="id">id do cliente</param>
+        /// <returns></returns>
+        public List<DML.Beneficiario> Pesquisa(long clienteId)
         {
-            return _beneficiarioDAO.Pesquisa(id);
+            return _beneficiarioDAO.Pesquisa(clienteId);
         }
     }
 }
