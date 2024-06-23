@@ -4,10 +4,10 @@ $(document).ready(function () {
     if (document.getElementById("gridClientes"))
         $('#gridClientes').jtable({
             title: 'Clientes',
-            paging: true, //Enable paging
-            pageSize: 5, //Set page size (default: 10)
-            sorting: true, //Enable sorting
-            defaultSorting: 'Nome ASC', //Set default sorting
+            paging: true, 
+            pageSize: 5, 
+            sorting: true, 
+            defaultSorting: 'Nome ASC', 
             actions: {
                 listAction: urlClienteList,
                 removeAction: '/Cliente/Excluir'
@@ -40,7 +40,7 @@ $(document).ready(function () {
 })
 
 function apagarCliente(clienteId) {
-    if (confirm('Tem certeza que deseja excluir este cliente?')) {
+    if (confirm('Tem certeza que deseja excluir este cliente? Todos os beneficiários atrelados a ele tambem serão excluidos')) {
         $.post('/Cliente/Excluir', { id: clienteId }, function (data) {
             debugger
             if (data.Result === "OK") {
