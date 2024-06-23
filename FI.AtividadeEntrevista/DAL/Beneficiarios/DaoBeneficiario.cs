@@ -33,7 +33,7 @@ namespace FI.AtividadeEntrevista.DAL
                 new System.Data.SqlClient.SqlParameter("ID", beneficiario.Id)
             };
 
-            base.Executar("FI_SP_AltBeneficiario", parametros);
+            base.Executar("FI_SP_AltBenef", parametros);
         }
 
 
@@ -89,9 +89,9 @@ namespace FI.AtividadeEntrevista.DAL
                 foreach (DataRow row in ds.Tables[0].Rows)
                 {
                     DML.Beneficiario beneficiario = new DML.Beneficiario();
-                    beneficiario.Id = row.Field<long>("Id");
-                    beneficiario.ClienteId = row.Field<long>("ClienteID");
-                    beneficiario.Nome = row.Field<string>("Nome");
+                    beneficiario.Id = row.Field<long>("ID");
+                    beneficiario.ClienteId = row.Field<long>("IDCLIENTE");
+                    beneficiario.Nome = row.Field<string>("NOME");
                     beneficiario.CPF = row.Field<string>("CPF");
                     lista.Add(beneficiario);
                 }
