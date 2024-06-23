@@ -15,6 +15,7 @@ namespace FI.WebAtividadeEntrevista.Models
         /// CPF
         /// </summary>
         [Required]
+        [MaxLength(14)]
         public string CPF { get; set; }
 
         /// <summary>

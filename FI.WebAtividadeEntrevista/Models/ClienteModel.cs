@@ -75,6 +75,6 @@ namespace WebAtividadeEntrevista.Models
         /// <summary>
         /// Lista de beneficiários
         /// </summary>
-        public List<BeneficiarioModel> Beneficiarios { get; set; } = null;
+        public List<BeneficiarioModel> Beneficiarios { get; set; } = new List<BeneficiarioModel>();
     }    
 }
