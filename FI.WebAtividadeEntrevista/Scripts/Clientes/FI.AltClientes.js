@@ -107,7 +107,6 @@ $(document).ready(function () {
             Nome: $('#BeneficiarioNome').val()
         };
 
-        // Verifica se algum beneficiário diferente do beneficiário em edição já possui o mesmo CPF.
         var cpfDuplicado = beneficiarios.some(function (beneficiario) {
             return beneficiario.CPF == formData.CPF && beneficiario.Id != $('#BeneficiarioAlterando').val();
         });
@@ -117,7 +116,6 @@ $(document).ready(function () {
             return;
         }
 
-        // Busca o index do beneficiario que vai alterar.
         var index = beneficiarios.findIndex(function (beneficiario) {
             return beneficiario.Id == $('#BeneficiarioAlterando').val();
         });

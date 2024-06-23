@@ -24,43 +24,44 @@ function cpf(value) {
 }
 
 function validateCPF(value) {
-    if (value.length <= 11) {
-        var sum = 0;
-        var remainder;
+    value = value.replace(/\D/g, "");
 
-        for (var i = 1; i <= 9; i++) {
-            sum += parseInt(value.substring(i - 1, i)) * (11 - i);
-        }
-        remainder = (sum * 10) % 11;
-
-        if ((remainder == 10) || (remainder == 11)) {
-            remainder = 0;
-        }
-
-        if (remainder != parseInt(value.substring(9, 10))) {
-            return false;
-        }
-
-        sum = 0;
-        for (var i = 1; i <= 10; i++) {
-            sum += parseInt(value.substring(i - 1, i)) * (12 - i);
-        }
-        remainder = (sum * 10) % 11;
-
-        if ((remainder == 10) || (remainder == 11)) {
-            remainder = 0;
-        }
-
-        if (remainder != parseInt(value.substring(10, 11))) {
-            return false;
-        }
-
-        return true;
-    }
-    else {
+    if (value.length !== 11) {
         return false;
     }
+
+    if (/^(\d)\1{10}$/.test(value)) {
+        return false;
+    }
+
+    let sum = 0;
+    let remainder;
+
+    for (let i = 1; i <= 9; i++) {
+        sum += parseInt(value[i - 1], 10) * (11 - i);
+    }
+    remainder = (sum * 10) % 11;
+
+    if (remainder === 10 || remainder === 11) {
+        remainder = 0;
+    }
+    if (remainder !== parseInt(value.charAt(9), 10)) {
+        return false;
+    }
+
+    sum = 0;
+    for (let i = 1; i <= 10; i++) {
+        sum += parseInt(value[i - 1], 10) * (12 - i);
+    }
+    remainder = (sum * 10) % 11;
+
+    if (remainder === 10 || remainder === 11) {
+        remainder = 0;
+    }
+
+    return remainder === parseInt(value.charAt(10), 10);
 }
+
 
 function getNewId() {
     return ++lastId;

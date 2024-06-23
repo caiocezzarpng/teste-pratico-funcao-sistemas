@@ -36,7 +36,6 @@ $(document).ready(function () {
             ModalDialog("Operação Inválida", "O CPF informado é inválido.");
             return;
         }
-        debugger;
 
         $.ajax({
             url: urlPost,
@@ -67,6 +66,8 @@ $(document).ready(function () {
                 function (r) {
                     ModalDialog("Sucesso!", r)
                     $("#formCadastro")[0].reset();
+                    beneficiarios = [];
+                    $('#tabelaBeneficiarios tbody').empty();
                 }
         });
     })
@@ -84,8 +85,6 @@ $(document).ready(function () {
             CPF: cpfMask(cpfSemMascara),
             Nome: $('#BeneficiarioNome').val()
         };
-
-        // Verifica se algum beneficiário diferente do beneficiário em edição já possui o mesmo CPF.
         var cpfDuplicado = beneficiarios.some(function (beneficiario) {
             return beneficiario.CPF == formData.CPF && beneficiario.Id != $('#BeneficiarioAlterando').val();
         });
@@ -94,8 +93,6 @@ $(document).ready(function () {
             $('#alertMessage').text('Já existe um beneficiário com esse CPF para este cliente.');
             return;
         }
-
-        // Busca o index do beneficiario que vai alterar.
         var index = beneficiarios.findIndex(function (beneficiario) {
             return beneficiario.Id == $('#BeneficiarioAlterando').val();
         });
@@ -118,7 +115,7 @@ $(document).ready(function () {
             $("#btnAction").removeClass('btn-warning').addClass('btn-success');
 
             formData.Id = getNewId();
-            formData.Action = "Insert";
+            formData.Action = "Register";
             beneficiarios.push(formData);
 
             var newRow = '<tr id="' + formData.Id + '">                                                                                                                                                                          ' +
