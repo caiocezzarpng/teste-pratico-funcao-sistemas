@@ -1,4 +1,8 @@
-﻿$(document).ready(function () {
+﻿var dataContainer = document.getElementById('data-container');
+var beneficiarios = JSON.parse(dataContainer.getAttribute('data-items'));
+var lastId = beneficiarios[beneficiarios.length - 1] != null ? beneficiarios[beneficiarios.length - 1].Id : 0;
+
+$(document).ready(function () {
     if (obj) {
         debugger
         $('#formCadastro #Nome').val(obj.Nome);
@@ -10,18 +14,30 @@
         $('#formCadastro #Cidade').val(obj.Cidade);
         $('#formCadastro #Logradouro').val(obj.Logradouro);
         $('#formCadastro #Telefone').val(obj.Telefone);
+        $('#beneficiarioForm #ClienteId').val(obj.Id);
 
-        let cpfSemMascara = obj.CPF; 
-        let cpfComMascara = cpfMask(cpfSemMascara);
-        $('#formCadastro #CPF').val(cpfComMascara);
+        $('#formCadastro #CPF').val(cpfMask(obj.CPF));
     }
 
-    $('#CPF').on('input', function (e) {
+    $('#formCadastro #CPF').on('input', function (e) {
         cpfInputMask(this, cpf);
         $(this).attr('maxlength', '14');
     });
 
-    $('#CPF').on('paste', function (e) {
+    $('#formCadastro #CPF').on('paste', function (e) {
+        var clipboardData = e.originalEvent.clipboardData || window.clipboardData;
+        var pastedData = clipboardData.getData('text');
+        if (pastedData.length > 14) {
+            $(this).val(pastedData.substring(0, 14));
+        }
+    });
+
+    $('#BeneficiarioCPF').on('input', function (e) {
+        cpfInputMask(this, cpf);
+        $(this).attr('maxlength', '14');
+    });
+
+    $('#BeneficiarioCPF').on('paste', function (e) {
         var clipboardData = e.originalEvent.clipboardData || window.clipboardData;
         var pastedData = clipboardData.getData('text');
         if (pastedData.length > 14) {
@@ -51,7 +67,8 @@
                 "Estado": $(this).find("#Estado").val(),
                 "Cidade": $(this).find("#Cidade").val(),
                 "Logradouro": $(this).find("#Logradouro").val(),
-                "Telefone": $(this).find("#Telefone").val()
+                "Telefone": $(this).find("#Telefone").val(),
+                "beneficiariosJson": JSON.stringify(beneficiarios)
             },
             error:
             function (r) {
@@ -71,8 +88,77 @@
         });
     })
 
-    $('#BeneficiarioBtn').click(function () {
-        $('#beneficiarioModal').modal('show');
+    $("#btnShowBeneficiarios").click(function () {
+        $('#beneficiariosModal').modal('show');
+    });
+
+    $('#beneficiarioForm').submit(function (event) {
+        event.preventDefault();
+
+        let cpfSemMascara = $(this).find("#BeneficiarioCPF").val().replace(/\D/g, '');
+        if (!validateCPF(cpfSemMascara)) {
+            $('#alertMessage').text("O CPF informado é inválido.");
+            return;
+        }
+
+        var formData = {
+            ClienteId: $('#beneficiarioForm #ClienteId').val(),
+            CPF: cpfMask(cpfSemMascara),
+            Nome: $('#BeneficiarioNome').val()
+        };
+
+        // Verifica se algum beneficiário diferente do beneficiário em edição já possui o mesmo CPF.
+        var cpfDuplicado = beneficiarios.some(function (beneficiario) {
+            return beneficiario.CPF == formData.CPF && beneficiario.Id != $('#BeneficiarioAlterando').val();
+        });
+
+        if (cpfDuplicado) {
+            $('#alertMessage').text('Já existe um beneficiário com esse CPF para este cliente.');
+            return;
+        }
+
+        // Busca o index do beneficiario que vai alterar.
+        var index = beneficiarios.findIndex(function (beneficiario) {
+            return beneficiario.Id == $('#BeneficiarioAlterando').val();
+        });
+
+        if (index !== -1) {
+            var beneficiarioParaEditar = beneficiarios[index];
+
+            $("#btnAction").html('Incluir');
+            $("#btnAction").removeClass('btn-warning').addClass('btn-success');
+
+            beneficiarioParaEditar.CPF = formData.CPF;
+            beneficiarioParaEditar.Nome = formData.Nome;
+
+            $('#tabelaBeneficiarios #' + beneficiarioParaEditar.Id).find('td:nth-child(1)').text(beneficiarioParaEditar.CPF);
+            $('#tabelaBeneficiarios #' + beneficiarioParaEditar.Id).find('td:nth-child(2)').text(beneficiarioParaEditar.Nome);
+
+            beneficiarioParaEditar.Action = beneficiarioParaEditar.Action === "Register" ? "Register" : "Update";
+        } else {
+            $("#btnAction").html('Incluir');
+            $("#btnAction").removeClass('btn-warning').addClass('btn-success');
+
+            formData.Id = getNewId();
+            formData.Action = "Register";
+            beneficiarios.push(formData);
+
+            var newRow = '<tr id="' + formData.Id + '">                                                                                                                                                                          ' +
+                '             <td>' + formData.CPF + '</td>                                                                                                                                                                      ' +
+                '             <td>' + formData.Nome + '</td>                                                                                                                                                                     ' +
+                '             <td>                                                                                                                                                                                               ' +
+                '                  <button type="button" class="btn btn-sm btn-primary" onclick="editarBeneficiario(this.value)" id="editBeneficiarioBtn" value="' + formData.Id + '">Alterar</button>                          ' +
+                '                  <button type="button" class="btn btn-sm btn-primary" onclick="deletarBeneficiario(this.value)" id="delBeneficiarioBtn" value="' + formData.Id + '" style="margin-left: 10px">Excluir</button> ' +
+                '             </td>                                                                                                                                                                                              ' +
+                '         </tr>                                                                                                                                                                                                  ';
+
+            $('#tabelaBeneficiarios tbody').append(newRow);
+        }
+
+        $('#BeneficiarioCPF').val('');
+        $('#BeneficiarioNome').val('');
+        $('#alertMessage').text('');
+        $('#BeneficiarioAlterando').val('');
     });
 })
 
