@@ -91,7 +91,7 @@
     </div>
 </form>
 
-@if (Model != null)
+@if (Model != null && Model.Beneficiarios != null)
 {
     <div id="data-container" data-items='@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Beneficiarios))'></div>
 }
@@ -155,8 +155,8 @@
                                         <td>@beneficiario.CPF</td>
                                         <td>@beneficiario.Nome</td>
                                         <td>
-                                            <button type="button" class="btn btn-sm btn-primary" onclick="AlterarBeneficiario(this.value)" id="editBeneficiarioBtn" value="@beneficiario.Id">Alterar</button>
-                                            <button type="button" class="btn btn-sm btn-primary" onclick="DeletarBeneficiario(this.value)" id="delBeneficiarioBtn" value="@beneficiario.Id" style="margin-left: 10px">Excluir</button>
+                                            <button type="button" class="btn btn-sm btn-primary" onclick="editarBeneficiario(this.value)" id="editBeneficiarioBtn" value="@beneficiario.Id">Alterar</button>
+                                            <button type="button" class="btn btn-sm btn-primary" onclick="deletarBeneficiario(this.value)" id="delBeneficiarioBtn" value="@beneficiario.Id" style="margin-left: 10px">Excluir</button>
                                         </td>
                                     </tr>
                                 }
