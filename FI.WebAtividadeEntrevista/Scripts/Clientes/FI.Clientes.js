@@ -15,6 +15,19 @@ $(document).ready(function () {
         }
     });
 
+    $('#BeneficiarioCPF').on('input', function (e) {
+        cpfInputMask(this, cpf);
+        $(this).attr('maxlength', '14');
+    });
+
+    $('#BeneficiarioCPF').on('paste', function (e) {
+        var clipboardData = e.originalEvent.clipboardData || window.clipboardData;
+        var pastedData = clipboardData.getData('text');
+        if (pastedData.length > 14) {
+            $(this).val(pastedData.substring(0, 14));
+        }
+    });
+
     $('#formCadastro').submit(function (e) {
         e.preventDefault();
 
@@ -61,8 +74,14 @@ $(document).ready(function () {
     $('#beneficiarioForm').submit(function (event) {
         event.preventDefault();
 
+        let cpfSemMascara = $(this).find("#BeneficiarioCPF").val().replace(/\D/g, '');
+        if (!validateCPF(cpfSemMascara)) {
+            $('#alertMessage').text("O CPF informado é inválido.");
+            return;
+        }
+
         var formData = {
-            CPF: $('#BeneficiarioCPF').val(),
+            CPF: cpfMask(cpfSemMascara),
             Nome: $('#BeneficiarioNome').val()
         };
 
@@ -92,11 +111,14 @@ $(document).ready(function () {
 
             $('#tabelaBeneficiarios #' + beneficiarioParaEditar.Id).find('td:nth-child(1)').text(beneficiarioParaEditar.CPF);
             $('#tabelaBeneficiarios #' + beneficiarioParaEditar.Id).find('td:nth-child(2)').text(beneficiarioParaEditar.Nome);
+
+            beneficiarioParaEditar.Action = beneficiarioParaEditar.Action === "Insert" ? "Insert" : "Update";
         } else {
             $("#btnAction").html('Incluir');
             $("#btnAction").removeClass('btn-warning').addClass('btn-success');
 
             formData.Id = getNewId();
+            formData.Action = "Insert";
             beneficiarios.push(formData);
 
             var newRow = '<tr id="' + formData.Id + '">                                                                                                                                                                          ' +
@@ -120,20 +142,6 @@ $(document).ready(function () {
     $("#btnShowBeneficiarios").click(function () {
         $('#beneficiariosModal').modal('show');
     });
-});
-
-
-$('#BeneficiarioCPF').on('input', function (e) {
-    cpfInputMask(this, cpf);
-    $(this).attr('maxlength', '14');
-});
-
-$('#BeneficiarioCPF').on('paste', function (e) {
-    var clipboardData = e.originalEvent.clipboardData || window.clipboardData;
-    var pastedData = clipboardData.getData('text');
-    if (pastedData.length > 14) {
-        $(this).val(pastedData.substring(0, 14));
-    }
 });
 
 function ModalDialog(titulo, texto) {
