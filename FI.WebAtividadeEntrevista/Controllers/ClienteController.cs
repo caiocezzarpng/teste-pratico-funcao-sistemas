@@ -1,12 +1,12 @@
 ﻿using FI.AtividadeEntrevista.BLL;
-using WebAtividadeEntrevista.Models;
+using FI.AtividadeEntrevista.DML;
+using FI.WebAtividadeEntrevista.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
+using System.Text.RegularExpressions;
 using System.Web.Mvc;
-using FI.AtividadeEntrevista.DML;
-using FI.WebAtividadeEntrevista.Models;
+using WebAtividadeEntrevista.Models;
 
 namespace WebAtividadeEntrevista.Controllers
 {
@@ -29,6 +29,7 @@ namespace WebAtividadeEntrevista.Controllers
             try
             {
                 BoCliente bo = new BoCliente();
+                BoBeneficiario boBeneficiario = new BoBeneficiario();
 
                 if (!this.ModelState.IsValid)
                 {
@@ -65,10 +66,12 @@ namespace WebAtividadeEntrevista.Controllers
 
                     if (beneficiarioModels != null)
                     {
-                        BoBeneficiario boBeneficiario = new BoBeneficiario();
+                        Regex regex = new Regex("[^0-9]");
 
                         foreach (BeneficiarioModel beneficiario in beneficiarioModels)
                         {
+                            beneficiario.CPF = regex.Replace(beneficiario.CPF, string.Empty);
+
                             boBeneficiario.Incluir(new Beneficiario()
                             {
                                 CPF = beneficiario.CPF,
@@ -88,9 +91,10 @@ namespace WebAtividadeEntrevista.Controllers
         }
 
         [HttpPost]
-        public JsonResult Alterar(ClienteModel model)
+        public JsonResult Alterar(ClienteModel model, string beneficiariosJson)
         {
-            BoCliente bo = new BoCliente();
+            BoCliente boCliente = new BoCliente();
+            BoBeneficiario boBeneficiario = new BoBeneficiario();
        
             if (!this.ModelState.IsValid)
             {
@@ -103,13 +107,46 @@ namespace WebAtividadeEntrevista.Controllers
             }
             else
             {
-                if (bo.VerificarExistencia(model.CPF, model.Id))
+                if (boCliente.VerificarExistencia(model.CPF, model.Id))
                 {
                     Response.StatusCode = 409;
                     return Json("CPF já cadastrado");
                 }
 
-                bo.Alterar(new Cliente()
+                Regex regex = new Regex("[^0-9]");
+                List<BeneficiarioModel> beneficiarioModels = new List<BeneficiarioModel>();
+                beneficiarioModels = Newtonsoft.Json.JsonConvert.DeserializeObject<List<BeneficiarioModel>>(beneficiariosJson);
+
+                foreach (BeneficiarioModel beneficiario in beneficiarioModels)
+                {
+                    string action = beneficiario.Action ?? "None";
+
+                    if (action.Equals("Register", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        boBeneficiario.Incluir(new Beneficiario()
+                        {
+                            CPF = regex.Replace(beneficiario.CPF, string.Empty),
+                            Nome = beneficiario.Nome,
+                            ClienteId = model.Id
+                        });
+                    }
+                    else if (action.Equals("Remove", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        boBeneficiario.Excluir(beneficiario.Id);
+                    }
+                    else if (action.Equals("Update", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        boBeneficiario.Alterar(new Beneficiario()
+                        {
+                            Id = beneficiario.Id,
+                            CPF = regex.Replace(beneficiario.CPF, string.Empty),
+                            Nome = beneficiario.Nome,
+                            ClienteId = model.Id
+                        });
+                    }
+                }
+
+                boCliente.Alterar(new Cliente()
                 {
                     Id = model.Id,
                     CEP = model.CEP,
@@ -133,7 +170,7 @@ namespace WebAtividadeEntrevista.Controllers
         {
             BoCliente bo = new BoCliente();
             Cliente cliente = bo.Consultar(id);
-            Models.ClienteModel model = null;
+            ClienteModel model = null;
 
             if (cliente != null)
             {
@@ -151,7 +188,19 @@ namespace WebAtividadeEntrevista.Controllers
                     Telefone = cliente.Telefone,
                     CPF = cliente.CPF
                 };
-  
+
+                List<Beneficiario> beneficiarios = new BoBeneficiario().Pesquisa(id);
+                
+                foreach (Beneficiario beneficiario in beneficiarios)
+                {
+                    model.Beneficiarios.Add(new BeneficiarioModel()
+                    {
+                        Id = beneficiario.Id,
+                        CPF = CpfMask(beneficiario.CPF),
+                        Nome = beneficiario.Nome,
+                        ClienteId = beneficiario.ClienteId
+                    });
+                }
             }
 
             return View(model);
@@ -175,23 +224,7 @@ namespace WebAtividadeEntrevista.Controllers
 
                 List<Cliente> clientes = new BoCliente().Pesquisa(jtStartIndex, jtPageSize, campo, crescente.Equals("ASC", StringComparison.InvariantCultureIgnoreCase), out qtd);
 
-                //Return result to jTable
                 return Json(new { Result = "OK", Records = clientes, TotalRecordCount = qtd });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { Result = "ERROR", Message = ex.Message });
-            }
-        }
-
-        [HttpGet]
-        public JsonResult ListarBeneficiarios(long clientID)
-        {
-            try
-            {
-                List<Beneficiario> beneficiarios = new BoBeneficiario().Pesquisa(clientID);
-
-                return Json(new { Result = "OK", Records = beneficiarios, JsonRequestBehavior.AllowGet });
             }
             catch (Exception ex)
             {
@@ -211,6 +244,11 @@ namespace WebAtividadeEntrevista.Controllers
             {
                 return Json(new { Result = "ERROR", Message = ex.Message });
             }
+        }
+
+        private string CpfMask(string cpf)
+        {
+            return Regex.Replace(cpf, @"(\d{3})(\d{3})(\d{3})(\d{2})", "$1.$2.$3-$4");
         }
     }
 }
