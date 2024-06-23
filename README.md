@@ -17,3 +17,8 @@ Este projeto é uma aplicação web desenvolvida para facilitar a gestão de cli
 - **Exclusão de Clientes:** Oferece a opção de remover clientes do sistema.
 - **Listagem de Clientes:** Exibe todos os clientes cadastrados.
 - **Gerenciamento de Beneficiários:** Permite associar, editar e remover beneficiários de um cliente.
+
+## Banco de dados
+
+- O Banco de dados se encontra na pasta **App_Data** do projeto **FI.WebAtividadeEntrevista**.
+- Nele, contém todas as **procedures** utilizadas pela aplicação.
