@@ -4,7 +4,7 @@
 function cpfInputMask(o, f) {
     v_obj = o;
     v_fun = f;
-    setTimeout('initCpfInputMask()', 100);
+    setTimeout('initCpfInputMask()', 50);
 }
 
 function initCpfInputMask() {
@@ -85,6 +85,12 @@ function deletarBeneficiario(id) {
     });
 
     if (index !== -1) {
-        beneficiarios.splice(index, 1);
+        var beneficiarioParaRemover = beneficiarios[index];
+
+        if (beneficiarioParaRemover.Action === "Register") {
+            beneficiarios.splice(index, 1);
+        } else {
+            beneficiarioParaRemover.Action = "Remove";
+        }
     }
 }
